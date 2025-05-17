@@ -171,7 +171,7 @@ Tp anycast_impl(Any& any) {
         throw std::bad_cast();
     }
     void* object = ManagerT::access_object(any.storage_);
-    return *static_cast<Decayed*>(object); // Return reference
+    return *static_cast<Decayed*>(object);
 }
 
 template <typename Tp>
