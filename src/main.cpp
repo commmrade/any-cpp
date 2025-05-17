@@ -1,3 +1,4 @@
+#include <any>
 #include <iostream>
 #include <utility>
 #include <typeinfo>
@@ -6,11 +7,9 @@
 #include "any.hpp"
 
 int main() {
-    Any any;
-    any.emplace<double>(14.88);
-    Any any2{std::move(any)};
-    
-    std::cout << "'" << anycast<double>(any2) << "'" << std::endl;
-    
+    Any a{10};
+    {
+        Any b{std::move(a)};
+    }
     return 0;
 }

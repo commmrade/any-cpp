@@ -10,15 +10,9 @@ class Any {
         void* ptr;
         char buf[sizeof(ptr)];
     };
-
-    enum class ManagerAction {
-        DELETE,
-        CLONE,
-    };
     
     template <typename Tp>
     struct ManagerSmall {
-        static_assert(std::is_trivially_copyable_v<Tp>, "ManagerSmall requires trivially copyable types");
         // Static methods, so no need to create an object + encapsulation
         template <typename ... Args>
         static void construct_object(Storage& storage, Args&&... args) {
@@ -70,12 +64,13 @@ public:
     using ValueType = typename std::decay_t<Tp>; // discard stuff like constness, volatilness and etc,
 
     template <typename Tp>
-    using Manager = std::conditional_t<(sizeof(ValueType<Tp>) <= sizeof(Storage::buf) && 
-        alignof(ValueType<Tp>) <= sizeof(Storage::buf) &&
-        std::is_nothrow_move_constructible_v<ValueType<Tp>>), 
-        ManagerSmall<ValueType<Tp>>, ManagerBig<ValueType<Tp>>>;
+    using is_suitable_for_small_manager = std::integral_constant<bool, (sizeof(ValueType<Tp>) <= sizeof(Storage::buf) && 
+    alignof(ValueType<Tp>) <= sizeof(Storage::buf) &&
+    std::is_nothrow_move_constructible_v<ValueType<Tp>>)>;
     // ManagerSmall for <= 8 bytes (x64) types to store on the stack
     // ManagerBig to store on the heap
+    template <typename Tp>
+    using Manager = std::conditional_t<is_suitable_for_small_manager<Tp>::value, ManagerSmall<ValueType<Tp>>, ManagerBig<ValueType<Tp>>>;
 
     Any() = default;
     ~Any() {
@@ -100,15 +95,14 @@ public:
       destroy_func_(rhs.destroy_func_),
       clone_func_(rhs.clone_func_)
     {
-        std::memset((void*)&rhs.storage_, 0, sizeof(rhs.storage_));
-        rhs.reset();
+        reset_no_destroying(); // This way object is left in valid state
     }
     Any& operator=(Any&& rhs) noexcept {
         if (!rhs.has_value()) {
             reset();
         } else if (this != &rhs) {
-            swap(rhs); // No need to reset this, cuz it will be swapped and i will reset rhs
-            rhs.reset();
+            swap(rhs);
+            rhs.reset(); // Object rhs left in valid state
         }
         return *this;
     }
@@ -160,6 +154,13 @@ private:
         current_object_type_ = &typeid(Decayed); // Save it's type info for anycasting 
         destroy_func_ = Manager<Decayed>::destroy_object;
         clone_func_ = Manager<Decayed>::clone;
+    }
+
+    void reset_no_destroying() {
+        current_object_type_ = nullptr;
+        destroy_func_ = nullptr;
+        clone_func_ = nullptr;
+        std::memset((void*)&storage_, 0, sizeof(storage_));
     }
 };
 template<typename Tp>
