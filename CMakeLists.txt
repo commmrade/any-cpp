@@ -15,20 +15,18 @@ find_package(GTest REQUIRED)
 # --- Конец поиска Google Test ---
 
 # Основной исполняемый файл
-add_executable(proj main.cpp)
+add_executable(proj src/main.cpp)
 target_compile_options(proj PRIVATE -Wall -Wpedantic)
 # --- Настройка для тестов ---
 enable_testing() # Включаем тестирование в CMake
 
-# Пример исполняемого файла для тестов
-# Предположим, у вас есть файл test/main_test.cpp с вашими тестами
-# add_executable(run_tests test/main_test.cpp) # Замените test/main_test.cpp на ваш файл с тестами
+add_executable(run_tests test/main_test.cpp) # Замените test/main_test.cpp на ваш файл с тестами
 
 # Связываем тесты с найденным Google Test
 # GTest::gtest_main включает как библиотеку gtest, так и функцию main().
 # Если вы хотите предоставить свою собственную функцию main(), используйте GTest::gtest
 # и GTest::gmock (если нужен) и напишите свой main.
-# target_link_libraries(run_tests PRIVATE GTest::gtest_main)
+target_link_libraries(run_tests PRIVATE GTest::gtest_main)
 # Если вы также используете Google Mock:
 # target_link_libraries(run_tests PRIVATE GTest::gtest_main GTest::gmock_main)
 
