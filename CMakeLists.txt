@@ -15,8 +15,8 @@ find_package(GTest REQUIRED)
 # --- Конец поиска Google Test ---
 
 # Основной исполняемый файл
-add_executable(proj src/main.cpp)
-target_compile_options(proj PRIVATE -Wall -Wpedantic)
+# add_executable(proj src/any.)
+# target_compile_options(proj PRIVATE -Wall -Wpedantic)
 # --- Настройка для тестов ---
 enable_testing() # Включаем тестирование в CMake
 
