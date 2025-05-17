@@ -95,7 +95,7 @@ public:
       destroy_func_(rhs.destroy_func_),
       clone_func_(rhs.clone_func_)
     {
-        reset_no_destroying(); // This way object is left in valid state
+        rhs.reset_no_destroying(); // This way object is left in valid state
     }
     Any& operator=(Any&& rhs) noexcept {
         if (!rhs.has_value()) {
@@ -107,13 +107,13 @@ public:
         return *this;
     }
     
-    template <typename Tp, typename = std::enable_if_t<std::is_copy_constructible_v<ValueType<Tp>> && !std::is_same_v<ValueType<Tp>, Any>, void>>
+    template <typename Tp> requires (!std::is_same_v<ValueType<Tp>, Any> && std::is_copy_constructible_v<ValueType<Tp>>)
     Any(Tp&& value) {
         do_emplace<Tp>(value);
     }
 
-    template<typename Tp, typename ... Args>
-    std::enable_if_t<std::is_copy_constructible_v<ValueType<Tp>>, void> emplace(Args&&... args) {
+    template<typename Tp, typename ... Args> requires (std::is_copy_constructible_v<ValueType<Tp>>)
+    void emplace(Args&&... args) {
         do_emplace<Tp>(args...);
     }
 

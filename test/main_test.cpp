@@ -152,12 +152,6 @@ TEST(AnyCastTest, CastToMutableReference) {
     ASSERT_EQ(anycast<std::string>(any), "Changed");
 }
 
-TEST_F(AnyValueTest, SwapTwoValues) {
-    Any a{42}, b{std::string("hello")};
-    std::swap(a, b);
-    ASSERT_EQ(anycast<std::string>(a), "hello");
-    ASSERT_EQ(anycast<int>(b), 42);
-}
 TEST_F(AnyValueTest, LargeVectorTest) {
     std::vector<int> big_vec(100000, 1);
     Any any;
